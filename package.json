@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@globalart/warface-api": "^2.2.1",
     "chart.js": "^4.5.1",
+    "cheerio": "^1.2.0",
     "electron-store": "^11.0.2",
     "lucide-react": "^1.14.0",
     "react": "^18.2.0",
@@ -18,6 +20,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.35",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^7.1.1",

@@ -61,6 +61,13 @@ electron-vite.animate.svg
 electron-vite.svg
 vite.svg)}
 
+{ api (папка внутри src) содержимое:
+index.ts
+warface.ts }
+
+{ types (папка внутри src) содержимое:
+game.ts }
+
 node_modules (папка в корневой папке приложения)
 
 electron (папка в корневой папке приложения)
@@ -70,6 +77,8 @@ main.js (папка внутри dist-electron)
 preload.mjs (папка внутри dist-electron) }
 
 .git (папка в корневой папке приложения)
+
+
 
 
 📦 ТЕКУЩИЙ СТАТУС

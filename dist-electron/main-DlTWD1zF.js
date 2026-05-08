@@ -21,7 +21,7 @@ import os from "node:os";
 import "node:events";
 import "node:stream";
 import { fileURLToPath } from "node:url";
-import https$1 from "node:https";
+import { createRequire } from "node:module";
 const isObject = (value) => {
   const type2 = typeof value;
   return value !== null && (type2 === "object" || type2 === "function");
@@ -670,6 +670,7 @@ function writeFileSync(filePath, data, options = DEFAULT_WRITE_OPTIONS) {
       Temp.purge(tempPath);
   }
 }
+var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -1707,12 +1708,12 @@ function alwaysValidSchema(it, schema) {
 }
 util.alwaysValidSchema = alwaysValidSchema;
 function checkUnknownRules(it, schema = it.schema) {
-  const { opts, self } = it;
+  const { opts, self: self2 } = it;
   if (!opts.strictSchema)
     return;
   if (typeof schema === "boolean")
     return;
-  const rules2 = self.RULES.keywords;
+  const rules2 = self2.RULES.keywords;
   for (const key in schema) {
     if (!rules2[key])
       checkStrictMode(it, `unknown keyword: "${key}"`);
@@ -2069,8 +2070,8 @@ rules.getRules = getRules;
 var applicability = {};
 Object.defineProperty(applicability, "__esModule", { value: true });
 applicability.shouldUseRule = applicability.shouldUseGroup = applicability.schemaHasRulesForType = void 0;
-function schemaHasRulesForType({ schema, self }, type2) {
-  const group = self.RULES.types[type2];
+function schemaHasRulesForType({ schema, self: self2 }, type2) {
+  const group = self2.RULES.types[type2];
   return group && group !== true && shouldUseGroup(schema, group);
 }
 applicability.schemaHasRulesForType = schemaHasRulesForType;
@@ -2510,7 +2511,7 @@ function validSchemaType(schema, schemaType, allowUndefined = false) {
   return !schemaType.length || schemaType.some((st) => st === "array" ? Array.isArray(schema) : st === "object" ? schema && typeof schema == "object" && !Array.isArray(schema) : typeof schema == st || allowUndefined && typeof schema == "undefined");
 }
 keyword.validSchemaType = validSchemaType;
-function validateKeywordUsage({ schema, opts, self, errSchemaPath }, def2, keyword2) {
+function validateKeywordUsage({ schema, opts, self: self2, errSchemaPath }, def2, keyword2) {
   if (Array.isArray(def2.keyword) ? !def2.keyword.includes(keyword2) : def2.keyword !== keyword2) {
     throw new Error("ajv implementation error");
   }
@@ -2521,9 +2522,9 @@ function validateKeywordUsage({ schema, opts, self, errSchemaPath }, def2, keywo
   if (def2.validateSchema) {
     const valid2 = def2.validateSchema(schema[keyword2]);
     if (!valid2) {
-      const msg = `keyword "${keyword2}" value is invalid at path "${errSchemaPath}": ` + self.errorsText(def2.validateSchema.errors);
+      const msg = `keyword "${keyword2}" value is invalid at path "${errSchemaPath}": ` + self2.errorsText(def2.validateSchema.errors);
       if (opts.validateSchema === "log")
-        self.logger.error(msg);
+        self2.logger.error(msg);
       else
         throw new Error(msg);
     }
@@ -2959,11 +2960,11 @@ function subschemaCode(it, valid2) {
   }
   (0, boolSchema_1.boolOrEmptySchema)(it, valid2);
 }
-function schemaCxtHasRules({ schema, self }) {
+function schemaCxtHasRules({ schema, self: self2 }) {
   if (typeof schema == "boolean")
     return !schema;
   for (const key in schema)
-    if (self.RULES.all[key])
+    if (self2.RULES.all[key])
       return true;
   return false;
 }
@@ -2992,9 +2993,9 @@ function typeAndKeywords(it, errsCount) {
   schemaKeywords(it, types2, !checkedTypes, errsCount);
 }
 function checkRefsAndKeywords(it) {
-  const { schema, errSchemaPath, opts, self } = it;
-  if (schema.$ref && opts.ignoreKeywordsWithRef && (0, util_1$q.schemaHasRulesButRef)(schema, self.RULES)) {
-    self.logger.warn(`$ref: keywords ignored in schema at path "${errSchemaPath}"`);
+  const { schema, errSchemaPath, opts, self: self2 } = it;
+  if (schema.$ref && opts.ignoreKeywordsWithRef && (0, util_1$q.schemaHasRulesButRef)(schema, self2.RULES)) {
+    self2.logger.warn(`$ref: keywords ignored in schema at path "${errSchemaPath}"`);
   }
 }
 function checkNoDefault(it) {
@@ -3040,8 +3041,8 @@ function assignEvaluated({ gen, evaluated, props, items: items2 }) {
     gen.assign((0, codegen_1$r._)`${evaluated}.items`, items2);
 }
 function schemaKeywords(it, types2, typeErrors, errsCount) {
-  const { gen, schema, data, allErrors, opts, self } = it;
-  const { RULES } = self;
+  const { gen, schema, data, allErrors, opts, self: self2 } = it;
+  const { RULES } = self2;
   if (schema.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1$q.schemaHasRulesButRef)(schema, RULES))) {
     gen.block(() => keywordCode(it, "$ref", RULES.all.$ref.definition));
     return;
@@ -5041,11 +5042,11 @@ const def$A = {
   schemaType: "string",
   code(cxt) {
     const { gen, schema: $ref, it } = cxt;
-    const { baseId, schemaEnv: env2, validateName, opts, self } = it;
+    const { baseId, schemaEnv: env2, validateName, opts, self: self2 } = it;
     const { root } = env2;
     if (($ref === "#" || $ref === "#/") && baseId === root.baseId)
       return callRootRef();
-    const schOrEnv = compile_1$2.resolveRef.call(self, root, baseId, $ref);
+    const schOrEnv = compile_1$2.resolveRef.call(self2, root, baseId, $ref);
     if (schOrEnv === void 0)
       throw new ref_error_1$1.default(it.opts.uriResolver, baseId, $ref);
     if (schOrEnv instanceof compile_1$2.SchemaEnv)
@@ -6389,11 +6390,11 @@ function dynamicAnchor(cxt, anchor) {
 }
 dynamicAnchor$1.dynamicAnchor = dynamicAnchor;
 function _getValidate(cxt) {
-  const { schemaEnv, schema, self } = cxt.it;
+  const { schemaEnv, schema, self: self2 } = cxt.it;
   const { root, baseId, localRefs, meta } = schemaEnv.root;
-  const { schemaId } = self.opts;
+  const { schemaId } = self2.opts;
   const sch = new compile_1$1.SchemaEnv({ schema, schemaId, root, baseId, localRefs, meta });
-  compile_1$1.compileSchema.call(self, sch);
+  compile_1$1.compileSchema.call(self2, sch);
   return (0, ref_1$1.getValidate)(cxt, sch);
 }
 dynamicAnchor$1.default = def$a;
@@ -6630,7 +6631,7 @@ const def$1 = {
   error: error$1,
   code(cxt, ruleType) {
     const { gen, data, $data, schema, schemaCode, it } = cxt;
-    const { opts, errSchemaPath, schemaEnv, self } = it;
+    const { opts, errSchemaPath, schemaEnv, self: self2 } = it;
     if (!opts.validateFormats)
       return;
     if ($data)
@@ -6639,7 +6640,7 @@ const def$1 = {
       validateFormat();
     function validate$DataFormat() {
       const fmts = gen.scopeValue("formats", {
-        ref: self.formats,
+        ref: self2.formats,
         code: opts.code.formats
       });
       const fDef = gen.const("fDef", (0, codegen_1$1._)`${fmts}[${schemaCode}]`);
@@ -6659,7 +6660,7 @@ const def$1 = {
       }
     }
     function validateFormat() {
-      const formatDef = self.formats[schema];
+      const formatDef = self2.formats[schema];
       if (!formatDef) {
         unknownFormat();
         return;
@@ -6671,7 +6672,7 @@ const def$1 = {
         cxt.pass(validCondition());
       function unknownFormat() {
         if (opts.strictSchema === false) {
-          self.logger.warn(unknownMsg());
+          self2.logger.warn(unknownMsg());
           return;
         }
         throw new Error(unknownMsg());
@@ -8019,17 +8020,17 @@ var ajvExports = ajv.exports;
     error: error2,
     code(cxt) {
       const { gen, data, schemaCode, keyword: keyword2, it } = cxt;
-      const { opts, self } = it;
+      const { opts, self: self2 } = it;
       if (!opts.validateFormats)
         return;
-      const fCxt = new ajv_1.KeywordCxt(it, self.RULES.all.format.definition, "format");
+      const fCxt = new ajv_1.KeywordCxt(it, self2.RULES.all.format.definition, "format");
       if (fCxt.$data)
         validate$DataFormat();
       else
         validateFormat();
       function validate$DataFormat() {
         const fmts = gen.scopeValue("formats", {
-          ref: self.formats,
+          ref: self2.formats,
           code: opts.code.formats
         });
         const fmt = gen.const("fmt", (0, codegen_12._)`${fmts}[${fCxt.schemaCode}]`);
@@ -8037,7 +8038,7 @@ var ajvExports = ajv.exports;
       }
       function validateFormat() {
         const format2 = fCxt.schema;
-        const fmtDef = self.formats[format2];
+        const fmtDef = self2.formats[format2];
         if (!fmtDef || fmtDef === true)
           return;
         if (typeof fmtDef != "object" || fmtDef instanceof RegExp || typeof fmtDef.compare != "function") {
@@ -10589,6 +10590,7 @@ class ElectronStore extends Conf {
   }
 }
 const store = new ElectronStore();
+createRequire(import.meta.url);
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname$1, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
@@ -10600,7 +10602,10 @@ function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname$1, "preload.mjs")
+      preload: path.join(__dirname$1, "preload.mjs"),
+      // Важно для работы некоторых библиотек в Electron
+      nodeIntegration: false,
+      contextIsolation: true
     }
   });
   if (VITE_DEV_SERVER_URL) {
@@ -10609,45 +10614,23 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
 }
-async function fetchWarfaceData(nickname) {
-  return new Promise((resolve2, reject) => {
-    const encodedName = encodeURIComponent(nickname);
-    const url = `https://api.warface.ru/user/stat/?name=${encodedName}`;
-    https$1.get(url, { timeout: 5e3 }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        reject(new Error(`API требует HTTPS. Редирект ${res.statusCode}`));
-        return;
-      }
-      let data = "";
-      res.on("data", (chunk) => data += chunk);
-      res.on("end", () => {
-        try {
-          if (res.statusCode !== 200) {
-            reject(new Error(`Сервер вернул ошибку ${res.statusCode}`));
-            return;
-          }
-          const json = JSON.parse(data);
-          if (!json || Array.isArray(json) && json.length === 0 || json.error) {
-            reject(new Error("Игрок не найден или данные пусты"));
-            return;
-          }
-          resolve2(json);
-        } catch (e) {
-          reject(new Error("Ошибка чтения JSON: " + e.message));
-        }
-      });
-    }).on("error", (err) => reject(err));
-  });
-}
 ipcMain$1.handle("warface-get-stats", async (_event, nickname) => {
-  console.log(`[Main] Запрос статистики для: ${nickname}`);
+  var _a;
   try {
-    const data = await fetchWarfaceData(nickname);
-    console.log("[Main] Данные получены успешно");
-    return { success: true, data };
+    const { WFClient, WFSClient } = await import("./index-CGy4utuj.js").then((n) => n.i);
+    const client = new WFClient();
+    if (!client.user || typeof client.user.stat !== "function") {
+      throw new Error("Метод user.stat не найден в библиотеке");
+    }
+    const rawData = await client.user.stat(nickname);
+    return { success: true, data: rawData };
   } catch (error2) {
-    console.error("[Main] Ошибка API:", error2.message);
-    return { success: false, error: error2.message };
+    console.error("Ошибка в Main Process при запросе Warface:", error2);
+    return {
+      success: false,
+      error: error2.message || "Неизвестная ошибка API",
+      details: ((_a = error2.response) == null ? void 0 : _a.data) || error2.toString()
+    };
   }
 });
 ipcMain$1.handle("store-get", async (_event, key) => store.get(key));
@@ -10665,7 +10648,9 @@ app$1.on("activate", () => {
 });
 app$1.whenReady().then(createWindow);
 export {
-  MAIN_DIST,
-  RENDERER_DIST,
-  VITE_DEV_SERVER_URL
+  MAIN_DIST as M,
+  RENDERER_DIST as R,
+  VITE_DEV_SERVER_URL as V,
+  commonjsGlobal as c,
+  getDefaultExportFromCjs as g
 };

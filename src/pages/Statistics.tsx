@@ -1,100 +1,75 @@
-import { RefreshCw, Star, Trophy, Skull, Crosshair, Timer, Activity } from 'lucide-react';
+import { RefreshCw, Star, Trophy, Skull, Crosshair, Timer, Activity, ArrowLeft, Clock, Target } from 'lucide-react';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ArcElement } from 'chart.js';
+import { PlayerStats, MatchHistory } from '../types/game';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ArcElement);
 
-// --- Данные (моки) ---
-const metrics = [
-  { label: 'K/D', value: '1.45', change: '+12.4%', icon: Crosshair, color: 'text-blue-400' },
-  { label: 'Процент побед', value: '58%', change: '+5.7%', icon: Trophy, color: 'text-yellow-400' },
-  { label: 'Убийства', value: '2 532', change: '+8.1%', icon: Skull, color: 'text-red-400' },
-  { label: 'Смерти', value: '1 742', change: '-2.3%', icon: Activity, color: 'text-purple-400' },
-  { label: 'Матчи', value: '125', change: '+6.2%', icon: Timer, color: 'text-green-400' },
-  { label: 'Средний урон', value: '1 560', change: '+9.3%', icon: Crosshair, color: 'text-orange-400' },
-];
+interface StatisticsProps {
+  stats: PlayerStats | null;
+  matches: MatchHistory[] | null;
+  gameId: string | null;
+  onBack: () => void;
+}
 
-const weapons = [
-  { name: 'Золотой AK-12', kills: 853, accuracy: '23%', kd: '1.62' },
-  { name: 'Taurus CT9 G2', kills: 623, accuracy: '19%', kd: '1.35' },
-  { name: 'M4A1 Custom', kills: 512, accuracy: '20%', kd: '1.28' },
-];
-
-const maps = [
-  { name: 'Пункт назначения', winrate: '68%', kd: '1.78' },
-  { name: 'Депозит', winrate: '62%', kd: '1.55' },
-  { name: 'Фабрика', winrate: '60%', kd: '1.48' },
-];
-
-const matches = [
-  { mode: 'Командный бой', map: 'Пункт назначения', result: 'Победа', kd: '1.62', kills: '23 / 14', time: 'Сегодня, 14:32', type: 'win' },
-  { mode: 'Подрыв', map: 'Депозит', result: 'Поражение', kd: '0.88', kills: '12 / 18', time: 'Сегодня, 13:10', type: 'loss' },
-  { mode: 'Мясорубка', map: 'Фабрика', result: 'Победа', kd: '1.45', kills: '29 / 20', time: 'Вчера, 20:45', type: 'win' },
-];
-
-// ИСПРАВЛЕНО: добавлено свойство data: [...]
-const chartDataLine = {
+const mockChartDataLine = {
   labels: ['01.05', '06.05', '11.05', '16.05', '21.05', '26.05', '31.05'],
-  datasets: [
-    {
-      label: 'K/D',
-      data: [1.2, 1.35, 1.25, 1.5, 1.4, 1.55, 1.45], // <-- FIX: Added 'data:'
-      borderColor: '#6C5DD3',
-      backgroundColor: (context: any) => {
-        const ctx = context.chart.ctx;
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, 'rgba(108, 93, 211, 0.4)');
-        gradient.addColorStop(1, 'rgba(108, 93, 211, 0.0)');
-        return gradient;
-      },
-      fill: true,
-      tension: 0.4,
-      pointRadius: 3,
-      pointBackgroundColor: '#6C5DD3',
+  datasets: [{
+    label: 'K/D',
+    data: [1.2, 1.35, 1.25, 1.5, 1.4, 1.55, 1.45],
+    borderColor: '#6C5DD3',
+    backgroundColor: (context: any) => {
+      const ctx = context.chart.ctx;
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(108, 93, 211, 0.4)');
+      gradient.addColorStop(1, 'rgba(108, 93, 211, 0.0)');
+      return gradient;
     },
-  ],
+    fill: true,
+    tension: 0.4,
+    pointRadius: 3,
+    pointBackgroundColor: '#6C5DD3',
+  }],
 };
 
-const chartOptionsLine = {
+const mockChartOptionsLine = {
   responsive: true,
   maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: '#161822',
-      titleColor: '#fff',
-      borderColor: '#232633',
-      borderWidth: 1,
-      padding: 8,
-      cornerRadius: 8,
-    },
-  },
-  scales: {
-    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-    y: { grid: { color: '#232633' }, ticks: { color: '#94A3B8', font: { size: 10 } }, min: 0.5, max: 2.5 },
-  },
+  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#161822', titleColor: '#fff', borderColor: '#232633', borderWidth: 1, padding: 8, cornerRadius: 8 } },
+  scales: { x: { grid: { display: false, drawBorder: false }, ticks: { color: '#94A3B8', font: { size: 10 } } }, y: { grid: { color: '#232633' }, ticks: { color: '#94A3B8', font: { size: 10 } }, min: 0.5, max: 2.5 } },
 };
 
-// ИСПРАВЛЕНО: добавлено свойство data: [...]
-const chartDataDoughnut = {
+const mockChartDataDoughnut = {
   labels: ['Командный', 'Подрыв', 'Мясорубка', 'Штурм'],
-  datasets: [
-    {
-      data: [42, 28, 15, 15], // <-- FIX: Added 'data:'
-      backgroundColor: ['#6C5DD3', '#EF4444', '#10B981', '#F59E0B'],
-      borderWidth: 0,
-      hoverOffset: 4,
-    },
-  ],
+  datasets: [{ data: [42, 28, 15, 15], backgroundColor: ['#6C5DD3', '#EF4444', '#10B981', '#F59E0B'], borderWidth: 0, hoverOffset: 4 }],
 };
 
-export default function Statistics() {
+export default function Statistics({ stats, matches, gameId, onBack }: StatisticsProps) {
+  if (!stats) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-textMuted">
+        <h2 className="text-2xl font-bold text-white mb-2">Нет данных</h2>
+        <p className="mb-4">Вернитесь на главную и выполните поиск игрока.</p>
+        <button onClick={onBack} className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accentHover transition-colors">
+          <ArrowLeft size={18} /> На главную
+        </button>
+      </div>
+    );
+  }
+
+  const gameName = gameId === 'warface' ? 'Warface' : gameId || 'Игра';
+
   return (
     <div className="p-6 overflow-y-auto h-screen">
       {/* Хедер страницы */}
       <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2 text-textMuted text-sm">
-          <span>Статистика</span> <span>/</span> <span className="text-white font-medium">Warface</span>
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 hover:bg-surfaceHover rounded-lg transition-colors text-textMuted hover:text-white">
+            <ArrowLeft size={20} />
+          </button>
+          <div className="flex items-center gap-2 text-textMuted text-sm">
+            <span>Статистика</span> <span>/</span> <span className="text-white font-medium">{gameName}</span>
+          </div>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-lg text-sm hover:bg-surfaceHover transition-colors">
@@ -111,13 +86,19 @@ export default function Statistics() {
       <div className="bg-surface border border-border rounded-xl p-4 mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center text-2xl font-bold text-accent border-2 border-accent/50">
-            93
+            {stats.level}
           </div>
           <div>
-            <h2 className="text-lg font-bold">StomaUser</h2>
-            <p className="text-xs text-textMuted">Сервер: Альфа • Опыт: 23 450 / 30 000</p>
+            <h2 className="text-lg font-bold">{stats.nickname}</h2>
+            <p className="text-xs text-textMuted">
+              {stats.server ? `Сервер: ${stats.server}` : 'Онлайн'} • {stats.rank}
+            </p>
+            <div className="flex items-center gap-4 mt-1 text-xs text-textMuted">
+               {stats.playtime && <span>⏱ {stats.playtime}</span>}
+               {stats.favoritePVP && <span>🎯 Любимый: {stats.favoritePVP}</span>}
+            </div>
             <div className="w-48 h-1.5 bg-bg rounded-full mt-2 overflow-hidden">
-              <div className="h-full bg-accent w-[78%]"></div>
+              <div className="h-full bg-accent" style={{ width: `${stats.experience && stats.maxExperience ? (stats.experience / stats.maxExperience) * 100 : 0}%` }}></div>
             </div>
           </div>
         </div>
@@ -128,17 +109,23 @@ export default function Statistics() {
 
       {/* Сетка метрик */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {metrics.map((m, i) => (
+        {[
+          { label: 'K/D', value: stats.kd.toFixed(2), change: '+0.0%', icon: Crosshair, color: 'text-blue-400' },
+          { label: 'Побед', value: stats.winRate, change: '+0.0%', icon: Trophy, color: 'text-yellow-400' },
+          { label: 'Матчи', value: stats.matches.toLocaleString(), change: '0', icon: Timer, color: 'text-green-400' },
+          { label: 'Урон', value: stats.avgDamage.toLocaleString(), change: '0', icon: Activity, color: 'text-orange-400' },
+          { label: 'Победы', value: stats.wins.toLocaleString(), change: '0', icon: Star, color: 'text-purple-400' },
+          { label: 'Рейтинг', value: stats.rating.toLocaleString(), change: '0', icon: Target, color: 'text-red-400' },
+        ].map((m, i) => (
           <div key={i} className="bg-surface border border-border rounded-xl p-4 flex flex-col gap-2 hover:border-accent/30 transition-colors">
             <div className="flex justify-between items-start">
               <m.icon size={16} className={m.color} />
-              <span className="text-xs font-medium text-green-400">{m.change}</span>
+              <span className="text-xs font-medium text-textMuted">--</span>
             </div>
             <div className="mt-auto">
               <div className="text-2xl font-bold">{m.value}</div>
               <div className="text-xs text-textMuted">{m.label}</div>
             </div>
-            {/* Мини-график (имитация) */}
             <div className="h-8 flex items-end gap-0.5 mt-2 opacity-50">
                {[40, 60, 45, 70, 55, 80, 65].map((h, idx) => (
                  <div key={idx} className="flex-1 bg-accent rounded-t-sm" style={{ height: `${h}%` }}></div>
@@ -152,28 +139,23 @@ export default function Statistics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-surface border border-border rounded-xl p-4">
           <div className="flex justify-between mb-4">
-            <h3 className="font-semibold">Динамика показателей</h3>
-            <div className="flex gap-2">
-              <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded">K/D</span>
-              <span className="text-xs bg-surfaceHover text-textMuted px-2 py-1 rounded">Побед</span>
-            </div>
+            <h3 className="font-semibold">Динамика K/D</h3>
           </div>
-          <div className="h-64"><Line data={chartDataLine} options={chartOptionsLine} /></div>
+          <div className="h-64"><Line data={mockChartDataLine} options={mockChartOptionsLine} /></div>
         </div>
         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-6">
-          <div className="h-48 w-48"><Doughnut data={chartDataDoughnut} options={{ responsive: true, maintainAspectRatio: false, cutout: '70%' }} /></div>
+          <div className="h-48 w-48"><Doughnut data={mockChartDataDoughnut} options={{ responsive: true, maintainAspectRatio: false, cutout: '70%' }} /></div>
           <div className="flex-1">
             <h3 className="font-semibold mb-3">Режимы игры</h3>
             <ul className="space-y-2">
-              {chartDataDoughnut.labels.map((label, i) => (
+              {mockChartDataDoughnut.labels.map((label, i) => (
                 <li key={i} className="flex justify-between text-sm items-center">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ background: chartDataDoughnut.datasets[0].backgroundColor[i] }}></span>
+                    <span className="w-2 h-2 rounded-full" style={{ background: mockChartDataDoughnut.datasets[0].backgroundColor[i] }}></span>
                     <span className="text-textMuted">{label}</span>
                   </div>
                   <div className="flex gap-4 text-textMuted">
-                    <span>{chartDataDoughnut.datasets[0].data[i]}%</span>
-                    <span>{Math.floor(chartDataDoughnut.datasets[0].data[i] * 1.2)} матчей</span>
+                    <span>{mockChartDataDoughnut.datasets[0].data[i]}%</span>
                   </div>
                 </li>
               ))}
@@ -182,65 +164,29 @@ export default function Statistics() {
         </div>
       </div>
 
-      {/* Таблицы */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Оружие */}
-        <div className="bg-surface border border-border rounded-xl p-4">
-          <h3 className="font-semibold mb-4">Лучшее оружие</h3>
-          <table className="w-full text-sm">
-            <thead className="text-textMuted text-xs uppercase border-b border-border">
-              <tr><th className="pb-2 text-left">Оружие</th><th className="pb-2">Убийства</th><th className="pb-2">Точн.</th><th className="pb-2">K/D</th></tr>
-            </thead>
-            <tbody>
-              {weapons.map((w, i) => (
-                <tr key={i} className="border-b border-border/50 last:border-0">
-                  <td className="py-3 font-medium">{w.name}</td>
-                  <td className="py-3 text-center">{w.kills}</td>
-                  <td className="py-3 text-center">{w.accuracy}</td>
-                  <td className="py-3 text-center font-bold">{w.kd}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Карты */}
-        <div className="bg-surface border border-border rounded-xl p-4">
-          <h3 className="font-semibold mb-4">Лучшие карты</h3>
-          <table className="w-full text-sm">
-            <thead className="text-textMuted text-xs uppercase border-b border-border">
-              <tr><th className="pb-2 text-left">Карта</th><th className="pb-2">Побед</th><th className="pb-2">K/D</th></tr>
-            </thead>
-            <tbody>
-              {maps.map((m, i) => (
-                <tr key={i} className="border-b border-border/50 last:border-0">
-                  <td className="py-3 font-medium">{m.name}</td>
-                  <td className="py-3 text-center">{m.winrate}</td>
-                  <td className="py-3 text-center font-bold">{m.kd}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Матчи */}
-        <div className="bg-surface border border-border rounded-xl p-4 lg:col-span-1">
-          <h3 className="font-semibold mb-4">Последние матчи</h3>
+      {/* Последние матчи */}
+      <div className="bg-surface border border-border rounded-xl p-4">
+        <h3 className="font-semibold mb-4">Последние матчи</h3>
+        {matches && matches.length > 0 ? (
           <div className="space-y-3">
-            {matches.map((m, i) => (
-              <div key={i} className="flex items-center justify-between bg-bg/50 p-3 rounded-lg">
+            {matches.map((m) => (
+              <div key={m.id} className="flex items-center justify-between bg-bg/50 p-3 rounded-lg">
                 <div>
-                  <div className="font-medium text-sm">{m.mode}</div>
-                  <div className="text-xs text-textMuted">{m.map}</div>
+                  <div className="font-medium text-sm">{m.mode} {m.map && <span className="text-textMuted text-xs ml-2">• {m.map}</span>}</div>
+                  <div className="text-xs text-textMuted">{m.date}</div>
                 </div>
                 <div className="text-right">
                   <div className={`text-xs font-bold ${m.type === 'win' ? 'text-green-400' : 'text-red-400'}`}>{m.result}</div>
-                  <div className="text-xs text-textMuted">{m.time}</div>
+                  <div className="text-xs text-textMuted">K/D: {m.kd} • Счет: {m.score}</div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        ) : (
+          <div className="text-textMuted text-sm text-center py-4">
+            История матчей доступна во вкладке PvP на сайте источника.
+          </div>
+        )}
       </div>
     </div>
   );
