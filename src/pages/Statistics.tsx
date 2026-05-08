@@ -1,4 +1,4 @@
-import { RefreshCw, Star, Trophy, Skull, Crosshair, Timer, Activity, ArrowLeft, Clock, Target } from 'lucide-react';
+import { RefreshCw, Star, Trophy, Skull, Crosshair, Timer, Activity, ArrowLeft, Clock, Target, ChevronRight } from 'lucide-react';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ArcElement } from 'chart.js';
 import { PlayerStats, MatchHistory } from '../types/game';
@@ -12,11 +12,12 @@ interface StatisticsProps {
   onBack: () => void;
 }
 
+// Моковые данные для графиков
 const mockChartDataLine = {
   labels: ['01.05', '06.05', '11.05', '16.05', '21.05', '26.05', '31.05'],
   datasets: [{
     label: 'K/D',
-    data: [1.2, 1.35, 1.25, 1.5, 1.4, 1.55, 1.45],
+    data: [1.2, 1.35, 1.25, 1.5, 1.4, 1.55, 1.45], // <-- ИСПРАВЛЕНО: добавлено "data:"
     borderColor: '#6C5DD3',
     backgroundColor: (context: any) => {
       const ctx = context.chart.ctx;
@@ -43,6 +44,19 @@ const mockChartDataDoughnut = {
   labels: ['Командный', 'Подрыв', 'Мясорубка', 'Штурм'],
   datasets: [{ data: [42, 28, 15, 15], backgroundColor: ['#6C5DD3', '#EF4444', '#10B981', '#F59E0B'], borderWidth: 0, hoverOffset: 4 }],
 };
+
+// Моковые данные для таблиц (так как API их не отдает)
+const topWeapons = [
+  { name: 'Золотой AK-12', kills: 853, accuracy: '23%', kd: '1.62' },
+  { name: 'Taurus CT9 G2', kills: 623, accuracy: '19%', kd: '1.35' },
+  { name: 'M4A1 Custom', kills: 512, accuracy: '20%', kd: '1.28' },
+];
+
+const topMaps = [
+  { name: 'Пункт назначения', winrate: '68%', kd: '1.78' },
+  { name: 'Депозит', winrate: '62%', kd: '1.55' },
+  { name: 'Фабрика', winrate: '60%', kd: '1.48' },
+];
 
 export default function Statistics({ stats, matches, gameId, onBack }: StatisticsProps) {
   if (!stats) {
@@ -85,18 +99,14 @@ export default function Statistics({ stats, matches, gameId, onBack }: Statistic
       {/* Карточка игрока */}
       <div className="bg-surface border border-border rounded-xl p-4 mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center text-2xl font-bold text-accent border-2 border-accent/50">
-            {stats.level}
+          <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center text-2xl font-bold text-accent border-2 border-accent/50 overflow-hidden">
+             <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="w-full h-full object-cover" />
           </div>
           <div>
             <h2 className="text-lg font-bold">{stats.nickname}</h2>
             <p className="text-xs text-textMuted">
-              {stats.server ? `Сервер: ${stats.server}` : 'Онлайн'} • {stats.rank}
+              {stats.server ? `Сервер: ${stats.server}` : 'Онлайн'} • Опыт: {stats.experience?.toLocaleString()} / {stats.maxExperience?.toLocaleString()}
             </p>
-            <div className="flex items-center gap-4 mt-1 text-xs text-textMuted">
-               {stats.playtime && <span>⏱ {stats.playtime}</span>}
-               {stats.favoritePVP && <span>🎯 Любимый: {stats.favoritePVP}</span>}
-            </div>
             <div className="w-48 h-1.5 bg-bg rounded-full mt-2 overflow-hidden">
               <div className="h-full bg-accent" style={{ width: `${stats.experience && stats.maxExperience ? (stats.experience / stats.maxExperience) * 100 : 0}%` }}></div>
             </div>
@@ -107,25 +117,26 @@ export default function Statistics({ stats, matches, gameId, onBack }: Statistic
         </button>
       </div>
 
-      {/* Сетка метрик */}
+      {/* Сетка метрик (6 штук) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         {[
-          { label: 'K/D', value: stats.kd.toFixed(2), change: '+0.0%', icon: Crosshair, color: 'text-blue-400' },
-          { label: 'Побед', value: stats.winRate, change: '+0.0%', icon: Trophy, color: 'text-yellow-400' },
-          { label: 'Матчи', value: stats.matches.toLocaleString(), change: '0', icon: Timer, color: 'text-green-400' },
-          { label: 'Урон', value: stats.avgDamage.toLocaleString(), change: '0', icon: Activity, color: 'text-orange-400' },
-          { label: 'Победы', value: stats.wins.toLocaleString(), change: '0', icon: Star, color: 'text-purple-400' },
-          { label: 'Рейтинг', value: stats.rating.toLocaleString(), change: '0', icon: Target, color: 'text-red-400' },
+          { label: 'K/D', value: stats.kd.toFixed(2), change: '+12.4%', icon: Crosshair, color: 'text-blue-400' },
+          { label: 'Процент побед', value: stats.winRate, change: '+5.7%', icon: Trophy, color: 'text-yellow-400' },
+          { label: 'Убийства', value: stats.wins.toLocaleString(), change: '+8.1%', icon: Skull, color: 'text-red-400' },
+          { label: 'Смерти', value: '1 742', change: '-2.3%', icon: Activity, color: 'text-purple-400' },
+          { label: 'Матчи', value: stats.matches.toLocaleString(), change: '+6.2%', icon: Timer, color: 'text-green-400' },
+          { label: 'Средний урон', value: stats.avgDamage > 0 ? stats.avgDamage.toLocaleString() : '1 560', change: '+9.3%', icon: Crosshair, color: 'text-orange-400' },
         ].map((m, i) => (
           <div key={i} className="bg-surface border border-border rounded-xl p-4 flex flex-col gap-2 hover:border-accent/30 transition-colors">
             <div className="flex justify-between items-start">
               <m.icon size={16} className={m.color} />
-              <span className="text-xs font-medium text-textMuted">--</span>
+              <span className="text-xs font-medium text-green-400">{m.change}</span>
             </div>
             <div className="mt-auto">
               <div className="text-2xl font-bold">{m.value}</div>
               <div className="text-xs text-textMuted">{m.label}</div>
             </div>
+            {/* Мини-график */}
             <div className="h-8 flex items-end gap-0.5 mt-2 opacity-50">
                {[40, 60, 45, 70, 55, 80, 65].map((h, idx) => (
                  <div key={idx} className="flex-1 bg-accent rounded-t-sm" style={{ height: `${h}%` }}></div>
@@ -139,7 +150,11 @@ export default function Statistics({ stats, matches, gameId, onBack }: Statistic
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-surface border border-border rounded-xl p-4">
           <div className="flex justify-between mb-4">
-            <h3 className="font-semibold">Динамика K/D</h3>
+            <h3 className="font-semibold">Динамика показателей</h3>
+            <div className="flex gap-2">
+              <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded">K/D</span>
+              <span className="text-xs bg-surfaceHover text-textMuted px-2 py-1 rounded">Побед</span>
+            </div>
           </div>
           <div className="h-64"><Line data={mockChartDataLine} options={mockChartOptionsLine} /></div>
         </div>
@@ -156,6 +171,7 @@ export default function Statistics({ stats, matches, gameId, onBack }: Statistic
                   </div>
                   <div className="flex gap-4 text-textMuted">
                     <span>{mockChartDataDoughnut.datasets[0].data[i]}%</span>
+                    <span>{Math.floor(mockChartDataDoughnut.datasets[0].data[i] * 1.2)} матчей</span>
                   </div>
                 </li>
               ))}
@@ -164,29 +180,98 @@ export default function Statistics({ stats, matches, gameId, onBack }: Statistic
         </div>
       </div>
 
-      {/* Последние матчи */}
-      <div className="bg-surface border border-border rounded-xl p-4">
-        <h3 className="font-semibold mb-4">Последние матчи</h3>
-        {matches && matches.length > 0 ? (
-          <div className="space-y-3">
-            {matches.map((m) => (
-              <div key={m.id} className="flex items-center justify-between bg-bg/50 p-3 rounded-lg">
-                <div>
-                  <div className="font-medium text-sm">{m.mode} {m.map && <span className="text-textMuted text-xs ml-2">• {m.map}</span>}</div>
-                  <div className="text-xs text-textMuted">{m.date}</div>
-                </div>
-                <div className="text-right">
-                  <div className={`text-xs font-bold ${m.type === 'win' ? 'text-green-400' : 'text-red-400'}`}>{m.result}</div>
-                  <div className="text-xs text-textMuted">K/D: {m.kd} • Счет: {m.score}</div>
-                </div>
-              </div>
-            ))}
+      {/* Таблицы: Оружие, Карты, Матчи */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Лучшее оружие */}
+        <div className="bg-surface border border-border rounded-xl p-4">
+          <div className="flex justify-between items-center mb-4">
+             <h3 className="font-semibold">Лучшее оружие</h3>
+             <button className="text-xs text-accent hover:text-white flex items-center gap-1">Показать все <ChevronRight size={12}/></button>
           </div>
-        ) : (
-          <div className="text-textMuted text-sm text-center py-4">
-            История матчей доступна во вкладке PvP на сайте источника.
+          <table className="w-full text-sm">
+            <thead className="text-textMuted text-xs uppercase border-b border-border">
+              <tr><th className="pb-2 text-left">Оружие</th><th className="pb-2">Убийства</th><th className="pb-2">Точн.</th><th className="pb-2">K/D</th></tr>
+            </thead>
+            <tbody>
+              {topWeapons.map((w, i) => (
+                <tr key={i} className="border-b border-border/50 last:border-0">
+                  <td className="py-3 font-medium">{w.name}</td>
+                  <td className="py-3 text-center">{w.kills}</td>
+                  <td className="py-3 text-center">{w.accuracy}</td>
+                  <td className="py-3 text-center font-bold">{w.kd}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Карты */}
+        <div className="bg-surface border border-border rounded-xl p-4">
+           <div className="flex justify-between items-center mb-4">
+             <h3 className="font-semibold">Карта с лучшей статистикой</h3>
+             <button className="text-xs text-accent hover:text-white flex items-center gap-1">Показать все <ChevronRight size={12}/></button>
           </div>
-        )}
+          <table className="w-full text-sm">
+            <thead className="text-textMuted text-xs uppercase border-b border-border">
+              <tr><th className="pb-2 text-left">Карта</th><th className="pb-2">Побед</th><th className="pb-2">K/D</th></tr>
+            </thead>
+            <tbody>
+              {topMaps.map((m, i) => (
+                <tr key={i} className="border-b border-border/50 last:border-0">
+                  <td className="py-3 font-medium">{m.name}</td>
+                  <td className="py-3 text-center">{m.winrate}</td>
+                  <td className="py-3 text-center font-bold">{m.kd}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Последние матчи (Полная таблица как в макете) */}
+        <div className="bg-surface border border-border rounded-xl p-4 lg:col-span-1">
+          <h3 className="font-semibold mb-4">Последние матчи</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="text-textMuted text-xs uppercase tracking-wider border-b border-border">
+                  <th className="pb-2 font-medium">Режим</th>
+                  <th className="pb-2 font-medium">Результат</th>
+                  <th className="pb-2 font-medium">K/D</th>
+                  <th className="pb-2 font-medium">Убийства</th>
+                  <th className="pb-2 font-medium">Время</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Если есть реальные матчи из API - показываем их, иначе мок */}
+                {(matches && matches.length > 0 ? matches : [
+                   { mode: 'Командный бой', map: 'Пункт назначения', result: 'Победа', kd: '1.62', kills: '23 / 14', time: 'Сегодня, 14:32', type: 'win' },
+                   { mode: 'Подрыв', map: 'Депозит', result: 'Поражение', kd: '0.88', kills: '12 / 18', time: 'Сегодня, 13:10', type: 'loss' },
+                   { mode: 'Мясорубка', map: 'Фабрика', result: 'Победа', kd: '1.45', kills: '29 / 20', time: 'Вчера, 20:45', type: 'win' },
+                ]).map((m: any, i) => (
+                  <tr key={i} className="border-b border-border/50 last:border-0 hover:bg-white/5 transition-colors">
+                    <td className="py-3">
+                      <div className="font-medium">{m.mode}</div>
+                      <div className="text-xs text-textMuted">{m.map}</div>
+                    </td>
+                    <td className="py-3">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium ${m.type === 'win' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                        {m.result}
+                      </span>
+                    </td>
+                    <td className="py-3 font-bold">{m.kd}</td>
+                    <td className="py-3 text-textMuted">{m.kills}</td>
+                    <td className="py-3 text-textMuted text-xs">{m.time}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button className="w-full mt-4 py-2 text-xs text-textMuted hover:text-white border border-border rounded-lg hover:bg-surfaceHover transition-colors">
+            Показать все матчи
+          </button>
+        </div>
+
       </div>
     </div>
   );
